@@ -15,6 +15,7 @@ function App() {
   const [gameHasStarted, setGameHasStarted] = useState(false);
   const [obstacleHeight, setObstacleHeight] = useState(200);
   const [obstacleLeft, setObstacleLeft] = useState(GAME_WIDTH - OBSTACLE_WIDTH);
+  const [score, setScore] = useState(0);
 
   const bottomObstacleHeight = GAME_HEIGHT - OBSTACLE_GAP - obstacleHeight;
 
@@ -44,8 +45,24 @@ function App() {
       setObstacleHeight(
         Math.floor(Math.random() * (GAME_HEIGHT - OBSTACLE_GAP))
       );
+      setScore((score) => score + 1);
     }
-  });
+  }, [gameHasStarted, obstacleLeft]);
+
+  useEffect(() => {
+    const hasCollidedWithTopObstacle =
+      birdPosition >= 0 && birdPosition < obstacleHeight;
+    const hasCollidedWithBottomObstacle =
+      birdPosition <= 500 && birdPosition >= 500 - bottomObstacleHeight;
+
+    if (
+      obstacleLeft >= 0 &&
+      obstacleLeft <= OBSTACLE_WIDTH &&
+      (hasCollidedWithTopObstacle || hasCollidedWithBottomObstacle)
+    ) {
+      setGameHasStarted(false);
+    }
+  }, [birdPosition, obstacleHeight, bottomObstacleHeight, obstacleLeft]);
 
   const handleClick = () => {
     let newBirdPosition = birdPosition - JUMP_HEIGHT;
@@ -75,6 +92,7 @@ function App() {
         />
         <Bird size={BIRD_SIZE} top={birdPosition} />
       </GameBox>
+      <span> {score} </span>
     </Div>
   );
 }
@@ -94,18 +112,24 @@ const Div = styled.div`
   display: flex;
   width: 100%;
   justify-content: center;
+  & span {
+    color: white;
+    font-size: 24px;
+    postion: absolute;
+  }
 `;
 
 const GameBox = styled.div`
   height: ${(props) => props.height}px;
   width: ${(props) => props.width}px;
   background-color: blue;
+  overflow: hidden;
 `;
 
 const Obstacle = styled.div`
   postion: relative;
   top: ${(props) => props.top}px;
-  background-color: green;
+  background-color: black;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px
   left: ${(props) => props.left}px;
